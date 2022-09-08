@@ -177,7 +177,12 @@ class SimpleFileCache implements CacheInterface
 
     protected function getItemPath(string $key): string
     {
-        return $this->getStoragePath() . DIRECTORY_SEPARATOR . $this->getName() . DIRECTORY_SEPARATOR . hash('sha256', $key);
+        $path = $this->getNamespacePath();
+        if (!$this->fileAdapter->fileExists($path)) {
+            $this->fileAdapter->createDir($path);
+        }
+
+        return $path . DIRECTORY_SEPARATOR . hash('sha256', $key);
     }
 
 }
