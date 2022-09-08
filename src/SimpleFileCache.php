@@ -22,9 +22,9 @@ class SimpleFileCache implements CacheInterface
 
     public function __construct(string $name = 'default', string $storagePath = '/tmp', FileAdapterInterface $fileAdapter = null)
     {
+        $this->fileAdapter = $fileAdapter ?? new FileAdapter();
         $this->setName($name);
         $this->setStoragePath($storagePath);
-        $this->fileAdapter = $fileAdapter ?? new FileAdapter();
     }
 
     /**
