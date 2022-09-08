@@ -75,7 +75,7 @@ class CacheItem implements \JsonSerializable
             self::ITEM_VALUE => serialize($this->value),
             self::ITEM_EXPIRES_AT => $this->expiresAt,
             self::ITEM_CREATED_AT => $this->createdAt,
-            self::VERSION => self::VERSION
+            self::ITEM_VERSION => self::VERSION
         ];
     }
 
