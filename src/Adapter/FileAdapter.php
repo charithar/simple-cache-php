@@ -1,5 +1,8 @@
 <?php
 
+namespace Charithar\SimpleCache\Adapter;
+
+
 class FileAdapter implements FileAdapterInterface
 {
 
@@ -26,6 +29,7 @@ class FileAdapter implements FileAdapterInterface
     public function deleteDir(string $path): bool
     {
         array_map('unlink', glob(rtrim($path, '\\/') . "/*"));
+        return true;
     }
 
     public function deleteFile(string $path): bool

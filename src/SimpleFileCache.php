@@ -1,6 +1,13 @@
 <?php
 
-class SimpleFileCache implements Psr\SimpleCache\CacheInterface
+namespace Charithar\SimpleCache;
+
+
+use Charithar\SimpleCache\Adapter\FileAdapter;
+use Charithar\SimpleCache\Adapter\FileAdapterInterface;
+use Psr\SimpleCache\CacheInterface;
+
+class SimpleFileCache implements CacheInterface
 {
 
     /** @var string */
@@ -34,13 +41,13 @@ class SimpleFileCache implements Psr\SimpleCache\CacheInterface
     public function setStoragePath(string $storagePath): void
     {
         if (!$this->fileAdapter->isDir($storagePath)) {
-            throw new InvalidArgumentException('Storage path is not a valid directory');
+            throw new \InvalidArgumentException('Storage path is not a valid directory');
         }
         else if (!$this->fileAdapter->fileExists($storagePath)) {
-            throw new InvalidArgumentException('Storage path does not exist');
+            throw new \InvalidArgumentException('Storage path does not exist');
         }
         else if (!$this->fileAdapter->isWritable($storagePath)) {
-            throw new InvalidArgumentException('Storage path is not writable');
+            throw new \InvalidArgumentException('Storage path is not writable');
         }
 
         $this->storagePath = rtrim($storagePath, '\\/');
@@ -126,7 +133,7 @@ class SimpleFileCache implements Psr\SimpleCache\CacheInterface
     protected function validateIdentifier(string $identifier)
     {
         if (! preg_match('/^[a-zA-Z0-9_\-.]{1,64}$/', $identifier)) {
-            throw new InvalidArgumentException('Identifier is not valid. Only a-zA-Z0-9_-. characters allowed. Should not exceed 64 characters');
+            throw new \InvalidArgumentException('Identifier is not valid. Only a-zA-Z0-9_-. characters allowed. Should not exceed 64 characters');
         }
     }
 
@@ -135,7 +142,7 @@ class SimpleFileCache implements Psr\SimpleCache\CacheInterface
         if ($this->hasItem($key)) {
             $value = $this->fileAdapter->readFile($this->getItemPath($key));
             if ($value === false) {
-                throw new RuntimeException("Failed read item from cache");
+                throw new \RuntimeException("Failed read item from cache");
             }
         }
 

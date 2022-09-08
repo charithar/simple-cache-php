@@ -1,5 +1,8 @@
 <?php
 
+namespace Charithar\SimpleCache\Adapter;
+
+
 interface FileAdapterInterface
 {
 
