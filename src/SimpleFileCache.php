@@ -74,16 +74,19 @@ class SimpleFileCache implements CacheInterface
 
     public function get($key, $default = null)
     {
+        $this->validateIdentifier($key);
         return $this->getItem($key, $default);
     }
 
     public function set($key, $value, $ttl = null)
     {
+        $this->validateIdentifier($key);
         return $this->setItem($key, $value, $ttl);
     }
 
     public function delete($key)
     {
+        $this->validateIdentifier($key);
         return $this->deleteItem($key);
     }
 
