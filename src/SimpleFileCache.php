@@ -5,6 +5,8 @@ namespace Charithar\SimpleCache;
 
 use Charithar\SimpleCache\Adapter\FileAdapter;
 use Charithar\SimpleCache\Adapter\FileAdapterInterface;
+use Charithar\SimpleCache\Exception\CacheException;
+use Charithar\SimpleCache\Exception\InvalidArgumentException;
 use Psr\SimpleCache\CacheInterface;
 
 class SimpleFileCache implements CacheInterface
@@ -41,13 +43,13 @@ class SimpleFileCache implements CacheInterface
     public function setStoragePath(string $storagePath): void
     {
         if (!$this->fileAdapter->isDir($storagePath)) {
-            throw new \InvalidArgumentException('Storage path is not a valid directory');
+            throw new InvalidArgumentException('Storage path is not a valid directory');
         }
         else if (!$this->fileAdapter->fileExists($storagePath)) {
-            throw new \InvalidArgumentException('Storage path does not exist');
+            throw new InvalidArgumentException('Storage path does not exist');
         }
         else if (!$this->fileAdapter->isWritable($storagePath)) {
-            throw new \InvalidArgumentException('Storage path is not writable');
+            throw new InvalidArgumentException('Storage path is not writable');
         }
 
         $this->storagePath = rtrim($storagePath, '\\/');
@@ -133,7 +135,7 @@ class SimpleFileCache implements CacheInterface
     protected function validateIdentifier(string $identifier)
     {
         if (! preg_match('/^[a-zA-Z0-9_\-.]{1,64}$/', $identifier)) {
-            throw new \InvalidArgumentException('Identifier is not valid. Only a-zA-Z0-9_-. characters allowed. Should not exceed 64 characters');
+            throw new InvalidArgumentException('Identifier is not valid. Only a-zA-Z0-9_-. characters allowed. Should not exceed 64 characters');
         }
     }
 
@@ -142,7 +144,21 @@ class SimpleFileCache implements CacheInterface
         if ($this->hasItem($key)) {
             $value = $this->fileAdapter->readFile($this->getItemPath($key));
             if ($value === false) {
-                throw new \RuntimeException("Failed read item from cache");
+                throw new CacheException("Failed read item from cache");
+            }
+
+            try {
+                $item = CacheItem::fromItem(json_decode($value, true, 512, JSON_THROW_ON_ERROR));
+                if (!$item->isExpired()) {
+                    return $item->getValue($default);
+                }
+                else {
+                    $this->deleteItem($key);
+                }
+            }
+            catch (\Throwable $e) {
+                $this->deleteItem($key);
+                throw new CacheException("Error reading cache item");
             }
         }
 
@@ -157,7 +173,8 @@ class SimpleFileCache implements CacheInterface
 
     protected function setItem($key, $value, $ttl = null)
     {
-        return $this->fileAdapter->writeFile($this->getItemPath($key), $value) !== false;
+        $item = new CacheItem($value, $ttl);
+        return $this->fileAdapter->writeFile($this->getItemPath($key), json_encode($item)) !== false;
     }
 
     protected function deleteItem($key): bool
